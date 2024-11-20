@@ -1,0 +1,39 @@
+﻿@page "/previousreservations"
+@using loginv3.Models
+@using loginv3.Services
+@inject IReservationService ReservationService
+
+<h3>Reservas Anteriores</h3>
+
+@if (reservations == null)
+{
+
+
+    <p>Cargando reservas...</p>
+}
+else if (reservations.Count == 0)
+{
+    <p>No hay reservas registradas.</p>
+}
+else
+{
+    <ul>
+        @foreach (var reservation in reservations)
+        {
+            <li>
+                <strong>Restaurante:</strong> @reservation.Restaurant<br />
+                <strong>Cantidad de Personas:</strong> @reservation.PeopleCount<br />
+                <strong>Hora de la Reserva:</strong> @reservation.ReservationTime.ToString("g")
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    private List<Reservation> reservations;
+
+    protected override async Task OnInitializedAsync()
+    {
+        reservations = await ReservationService.GetAllReservationsAsync(); // Llama al método para obtener todas las reservas
+    }
+}

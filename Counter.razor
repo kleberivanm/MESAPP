@@ -1,0 +1,86 @@
+﻿@page "/counter"
+@using loginv3.Services
+@using loginv3.Models
+@inject IUserService UserService
+
+@using Microsoft.AspNetCore.Components;
+@using Microsoft.AspNetCore.Components.Web;
+@using MongoDB.Driver;
+
+<PageTitle>Reservas</PageTitle>
+
+<h1>Realiza tu Reserva</h1>
+
+<EditForm Model="reservation" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="restaurant" class="form-label">Selecciona un Restaurante</label>
+        <select id="restaurant" @bind="reservation.Restaurant" class="form-select" required>
+            <option value="">-- Selecciona un Restaurante --</option>
+            <option value="La Cocina del Mundo">La Cocina del Mundo</option>
+            <option value="El Sabor Mexicano">El Sabor Mexicano</option>
+            <option value="Pasta & Vino">Pasta & Vino</option>
+            <option value="Sushi Zen">Sushi Zen</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label for="people" class="form-label">Cantidad de Personas</label>
+        <input type="number" id="people" @bind="reservation.PeopleCount" class="form-control" min="1" required />
+    </div>
+
+    <div class="mb-3">
+        <label for="reservationTime" class="form-label">Hora de la Reserva</label>
+        <input type="datetime-local" id="reservationTime" @bind="reservation.ReservationTime" class="form-control" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Confirmar Reserva</button>
+</EditForm>
+
+@if (confirmationMessage != null)
+{
+    <div class="alert alert-success mt-3">
+        @confirmationMessage
+    </div>
+}
+
+@code {
+    private Reservation reservation = new Reservation();
+    private string confirmationMessage;
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            await SaveReservationToDatabase(reservation);
+            confirmationMessage = "Reserva confirmada exitosamente.";
+            reservation = new Reservation(); // Reinicia el formulario
+        }
+        catch (Exception ex)
+        {
+            confirmationMessage = $"Error al confirmar la reserva: {ex.Message}";
+        }
+    }
+
+    private async Task SaveReservationToDatabase(Reservation reservation)
+    {
+        var client = new MongoClient("mongodb://localhost:27017");
+        var database = client.GetDatabase("local");
+        var collection = database.GetCollection<Reservation>("reservas");
+
+        await collection.InsertOneAsync(reservation);
+    }
+    /*
+    public class Reservation
+    {
+        public string Id { get; set; } // ID de la reserva
+        public string Email { get; set; } // Correo del usuario
+        public string Restaurant { get; set; }
+        public int PeopleCount { get; set; }
+        public DateTime ReservationTime { get; set; }
+    }
+    */
+
+}

@@ -1,0 +1,45 @@
+﻿@page "/register"
+@using loginv3.Services
+@using loginv3.Models
+@inject IUserService UserService
+
+<h3>Register</h3>
+<EditForm Model="registerModel" OnValidSubmit="HandleRegister">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label class="custom-label">Nombre:</label>
+        <InputText @bind-Value="registerModel.Name" class="custom-input" />
+    </div>
+    <div>
+        <label class="custom-label">Correo:</label>
+        <InputText @bind-Value="registerModel.Email" class="custom-input" />
+    </div>
+    <div>
+        <label class="custom-label">Contraseña:</label>
+        <InputText @bind-Value="registerModel.Password" type="password" class="custom-input" />
+    </div>
+    <button type="submit">Registrar</button>
+
+    <p>¿Ya tienes una cuenta? <NavLink href="/login">Login</NavLink></p>
+</EditForm>
+
+@if (successMessage != null)
+{
+    <div class="alert alert-success mt-3">
+        @successMessage
+    </div>
+}
+
+@code {
+    private User registerModel = new User();
+    private string successMessage;
+
+    private async Task HandleRegister()
+    {
+        await UserService.RegisterAsync(registerModel);
+        successMessage = "Registro exitoso. ¡Bienvenido!";
+        registerModel = new User(); // Reinicia el formulario
+    }
+}
